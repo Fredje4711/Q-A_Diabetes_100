@@ -7,10 +7,7 @@
        <style>
 body {
     font-family: Arial, sans-serif;
-    /* margin: 20px; */ /* Vervang deze algemene margin */
     margin: 0 20px 20px 20px; /* Boven 0, rest 20px */
-    /* OF voeg alleen margin-top: 0; toe als je de rest wilt behouden */
-    /* margin-top: 0; */
     line-height: 1.6;
     background-color: #f9f9f9;
     color: #333;
@@ -36,11 +33,20 @@ h1 {
             padding: 10px;
             margin-bottom: 20px;
             display: none; /* Standaard verborgen */
+            border-left: 1px solid #eee; /* Optioneel: subtiele rand */
+            border-right: 1px solid #eee; /* Optioneel: subtiele rand */
+            border-bottom: 1px solid #eee; /* Optioneel: subtiele rand */
         }
 
         .content p:first-child {
             margin-top: 5px; /* Kleinere marge boven eerste paragraaf in content */
         }
+
+        /* Zorg ervoor dat paragrafen standaard block zijn */
+        .content p {
+            display: block; /* Standaard weergave */
+        }
+
 
         #toc {
             background-color: #f0f8ff;
@@ -50,7 +56,6 @@ h1 {
             margin-top: 10px;
         }
 
-        /* Stijl specifiek voor de h2 IN de inhoudsopgave (#toc) */
         #toc h2 {
              margin: 0;
              padding: 0;
@@ -58,23 +63,17 @@ h1 {
              border-bottom: none;
              cursor: default;
              margin-bottom: 0.5em;
-             margin-top: 0; /* Zekerheidshalve */
-             color: #333; /* Standaard tekstkleur voor de titel zelf */
-             font-size: 1.2em; /* Iets groter misschien */
+             margin-top: 0;
+             color: #333;
+             font-size: 1.2em;
              font-weight: bold;
         }
-
-        /* Optioneel: Span voor speciale styling IN de toc h2, als je die gebruikt */
-        /* #toc h2 span { */
-            /* styles... */
-        /* } */
-
 
         #toc ul {
             list-style-type: none;
             padding: 0;
             margin-top: 10px;
-            margin-bottom: 0; /* Geen extra marge onder de lijst */
+            margin-bottom: 0;
         }
 
         #toc li {
@@ -108,8 +107,8 @@ h1 {
         }
 
         .highlight {
-            background-color: #8fd3f1; /* Jouw gekozen kleur */
-            /* background-color: yellow; Alternatief */
+            background-color: #8fd3f1;
+            font-weight: bold; /* Maak het iets duidelijker */
         }
 
         #noResults {
@@ -117,11 +116,17 @@ h1 {
             text-align: center;
             font-style: italic;
             margin-top: 10px;
+            color: red;
+        }
+        #multiWordWarning {
+             display: none;
+             color: orange;
+             text-align: center;
+             margin-top: 10px;
         }
 
-        /* Secties zijn standaard zichtbaar, JS verbergt ze initieel */
         section {
-            display: block;
+            display: block; /* Secties zijn standaard zichtbaar (JS verbergt ze initieel) */
         }
     </style>
 </head>
@@ -132,15 +137,13 @@ h1 {
 	    <div id="search-container">
         <input type="text" id="search-input" placeholder="Enkel één kernwoord of trefwoord...">
         <button id="search-button" onclick="performSearch()">Zoeken</button>
-        <div id="noResults" style="display: none; color: red; text-align: center; margin-top: 10px;">Geen resultaten gevonden voor dit woord.</div>
-        <!-- NIEUWE MELDING HIERONDER -->
-        <div id="multiWordWarning" style="display: none; color: orange; text-align: center; margin-top: 10px;">Gebruik bij voorkeur één kernwoord voor het beste resultaat.</div>
+        <div id="noResults">Geen resultaten gevonden voor dit woord.</div>
+        <div id="multiWordWarning">Gebruik bij voorkeur één kernwoord voor het beste resultaat.</div>
     </div>
 
     <div id="toc">
         <h2>Inhoudsopgave</h2>
         <ul>
-            <!-- Correcte onclick voor inhoudsopgave links -->
             <li><a href="#algemeen" onclick="showSectionAndPreventDefault(event, 'algemeen')">Algemene informatie over diabetes</a></li>
             <li><a href="#typen" onclick="showSectionAndPreventDefault(event, 'typen')">Typen diabetes</a></li>
             <li><a href="#oorzaken" onclick="showSectionAndPreventDefault(event, 'oorzaken')">Oorzaken en risicofactoren</a></li>
@@ -436,219 +439,236 @@ h1 {
         </div>
     </section>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            var sections = document.querySelectorAll("section");
-            sections.forEach(function(section) {
-                section.style.display = "block"; // Zorg dat secties zichtbaar zijn
-                const contentDiv = section.querySelector('.content');
-                if (contentDiv) {
-                    // Sla de originele HTML op voor later herstel/highlighting
-                    contentDiv.setAttribute('data-original-html', contentDiv.innerHTML);
-                    contentDiv.style.display = 'none'; // Maar de inhoud verborgen
-                }
-            });
-            console.log("DOM Loaded. Initial setup complete."); // Log voor bevestiging
+<script>
+    // --- Globale variabele om originele staat van alle P's bij te houden ---
+    let originalParagraphStates = new Map(); // Slaat op {pElement: originalHTML}
+
+    document.addEventListener("DOMContentLoaded", function() {
+        console.log("Q&A DOM Loaded. Initializing...");
+        var sections = document.querySelectorAll("section");
+        sections.forEach(function(section) {
+            section.style.display = "block"; // Zorg dat sectie container bestaat
+            const contentDiv = section.querySelector('.content');
+            if (contentDiv) {
+                contentDiv.style.display = 'none'; // Verberg inhoud initieel
+                // Sla originele staat van elke P op
+                contentDiv.querySelectorAll('p').forEach(p => {
+                    originalParagraphStates.set(p, p.innerHTML); // Bewaar originele HTML per P
+                    p.style.display = ''; // Reset display stijl
+                });
+            }
+        });
+        console.log("Q&A Initial setup complete. Stored original state for", originalParagraphStates.size, "paragraphs.");
+    });
+
+    // --- Functie om originele staat van een P element te krijgen ---
+    function getOriginalParagraphHTML(pElement) {
+        return originalParagraphStates.get(pElement) || pElement.innerHTML; // Fallback
+    }
+
+    // --- Functie om de originele staat van alle P's binnen een div te herstellen ---
+    function restoreOriginalParagraphs(contentDiv) {
+         if (!contentDiv) return;
+         console.log(`    - Restoring original content and display for paragraphs in ${contentDiv.id}`);
+         contentDiv.querySelectorAll('p').forEach(p => {
+             const originalHTML = getOriginalParagraphHTML(p);
+             if (p.innerHTML !== originalHTML) {
+                 p.innerHTML = originalHTML; // Herstel HTML
+             }
+             p.style.display = 'block'; // Zorg dat P zichtbaar wordt bij herstel (of '' voor default)
+         });
+    }
+
+
+    function showSectionAndPreventDefault(event, sectionId) {
+        event.preventDefault();
+        console.log(`Q&A TOC Click: Showing section ${sectionId}`);
+        var targetElement = document.getElementById(sectionId);
+
+        document.getElementById('noResults').style.display = 'none';
+        document.getElementById('multiWordWarning').style.display = 'none';
+
+        var allSections = document.querySelectorAll("section");
+        allSections.forEach(function(sec) {
+            sec.style.display = "none"; // Verberg hele sectie
+            const contentDiv = sec.querySelector('.content');
+            if (contentDiv) {
+                contentDiv.style.display = 'none'; // Verberg content div
+                restoreOriginalParagraphs(contentDiv); // Herstel P's naar origineel en zichtbaar
+            }
         });
 
-        // Functie om sectie te tonen na klik op inhoudsopgave link
-        function showSectionAndPreventDefault(event, sectionId) {
-            event.preventDefault(); // Voorkom standaard # link gedrag
-            console.log(`Showing section via TOC: ${sectionId}`);
-            var targetElement = document.getElementById(sectionId);
+        if (targetElement) {
+            targetElement.style.display = "block"; // Toon de gekozen sectie (met titel)
+            // Inhoud blijft verborgen totdat H2 wordt geklikt
+            targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+            console.error(`Q&A TOC Error: Section ${sectionId} not found.`);
+        }
+        document.getElementById("search-input").value = ""; // Reset zoekveld
+    }
 
-            // Verberg andere meldingen
-            document.getElementById('noResults').style.display = 'none';
-            document.getElementById('multiWordWarning').style.display = 'none'; // <-- TOEGEVOEGDE REGEL
+    function toggleSection(contentId) {
+        console.log(`Q&A Toggle: Toggling content ${contentId}`);
+        var content = document.getElementById(contentId);
+        if (content) {
+             const isHidden = content.style.display === "none" || content.style.display === "";
+             if (isHidden) {
+                 // Herstel eerst originele staat voordat we tonen
+                 restoreOriginalParagraphs(content);
+                 content.style.display = "block";
+                 console.log(`  - Content ${contentId} shown with original paragraphs restored.`);
+             } else {
+                 content.style.display = "none";
+                 console.log(`  - Content ${contentId} hidden.`);
+             }
+        } else {
+            console.error(`Q&A Toggle Error: Element ${contentId} not found.`);
+        }
+    }
 
-             // Verberg eerst alle secties en hun inhoud
-            var allSections = document.querySelectorAll("section");
-             allSections.forEach(function(sec) {
-                 sec.style.display = "none";
-                 const contentDiv = sec.querySelector('.content');
-                 if (contentDiv) {
-                     contentDiv.style.display = 'none';
+    function performSearch() {
+        const searchText = document.getElementById("search-input").value.trim();
+        const searchPhrase = searchText.toLowerCase();
+        const multiWordWarningDiv = document.getElementById("multiWordWarning");
+        const noResultsMessage = document.getElementById("noResults");
+
+        multiWordWarningDiv.style.display = 'none';
+        noResultsMessage.style.display = 'none';
+
+        console.log(`\n--- Q&A Search START --- Phrase: "${searchPhrase}"`);
+
+        // 1. Handle empty search (Reset view)
+        if (searchPhrase === "") {
+            console.log("  -> Empty search, resetting view.");
+            document.querySelectorAll("section").forEach(sec => {
+                sec.style.display = "block"; // Toon sectie container
+                const contentDiv = sec.querySelector('.content');
+                if (contentDiv) {
+                    contentDiv.style.display = 'none'; // Verberg inhoud
+                    restoreOriginalParagraphs(contentDiv); // Herstel P's
+                }
+            });
+            console.log("--- Q&A Search END (Empty) ---");
+            return;
+        }
+
+        // 2. Check for multiple words
+        const searchWords = searchPhrase.split(' ').filter(word => word.length > 0);
+        if (searchWords.length > 1) {
+            console.log("  -> Multiple words detected. Showing warning.");
+            multiWordWarningDiv.style.display = 'block';
+            document.querySelectorAll("section").forEach(sec => sec.style.display = "none"); // Verberg alles
+            console.log("--- Q&A Search END (Multi-word) ---");
+            return;
+        }
+
+        // 3. Perform single word search
+        console.log("  -> Searching for single word:", searchPhrase);
+        let overallFound = false;
+
+        // FIRST: Reset all sections before searching
+        console.log("  -> Resetting all sections...");
+        document.querySelectorAll("section").forEach(sec => {
+            sec.style.display = "none"; // Hide section container
+            const contentDiv = sec.querySelector('.content');
+            if (contentDiv) {
+                restoreOriginalParagraphs(contentDiv); // Restore original P's and make them visible by default
+                contentDiv.style.display = 'none'; // Hide content div itself
+            }
+        });
+        console.log("  -> Reset complete.");
+
+        // SECOND: Iterate and check each section
+        console.log("  -> Checking sections for matches...");
+        document.querySelectorAll("section").forEach(function(sec) {
+            const contentDiv = sec.querySelector('.content');
+            if (!contentDiv) return; // Skip if no content div
+
+             let sectionContainsPhrase = false;
+             let matchingParagraphs = []; // Array om matchende P's op te slaan
+
+             // Check each paragraph for the phrase using its original text
+             contentDiv.querySelectorAll('p').forEach(p => {
+                 const originalHTML = getOriginalParagraphHTML(p);
+                 const tempP = document.createElement('p');
+                 tempP.innerHTML = originalHTML; // Check original text
+                 const paragraphText = tempP.innerText.toLowerCase();
+
+                 if (paragraphText.includes(searchPhrase)) {
+                     sectionContainsPhrase = true; // Mark dat de sectie een match bevat
+                     matchingParagraphs.push(p); // Voeg matchende P toe aan de lijst
                  }
              });
 
-            // Verwijder alle highlighting
-            var contentDivs = document.querySelectorAll(".content");
-            contentDivs.forEach(function(div) {
-                 removeHighlighting(div); // Zorg dat highlighting weg is na TOC klik
-            });
+             // If the section contains the phrase in at least one paragraph
+             if (sectionContainsPhrase) {
+                 console.log(`    * Match found in Section ${sec.id}`);
+                 overallFound = true; // Mark overall found flag
+                 sec.style.display = "block"; // Show section container (H2)
+                 contentDiv.style.display = "block"; // Show content div
 
-             // Toon de geselecteerde sectie (niet de inhoud ervan)
-            if (targetElement) {
-                targetElement.style.display = "block";
-                 // Scroll naar de sectie titel
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                console.log(` - Section ${sectionId} displayed and scrolled to.`);
-            } else {
-                 console.error(` - Section ${sectionId} not found.`);
-            }
-
-            // Reset zoekveld
-            document.getElementById("search-input").value = "";
-            console.log(" - Search input reset.");
-        }
-
-        // Functie om inhoud van sectie te tonen/verbergen
-        function toggleSection(contentId) {
-            console.log(`Toggling content: ${contentId}`);
-            var content = document.getElementById(contentId);
-            if (content) {
-                if (content.style.display === "none" || content.style.display === "") {
-                    content.style.display = "block";
-                     console.log(` - Content ${contentId} shown.`);
-                } else {
-                    content.style.display = "none";
-                     console.log(` - Content ${contentId} hidden.`);
-                }
-            } else {
-                console.error(` - Element with ID '${contentId}' not found for toggle.`);
-            }
-        }
-
-        // --- performSearch: Checkt eerst op meerdere woorden ---
-        function performSearch() {
-            var searchText = document.getElementById("search-input").value.trim(); // Trim spaties
-            const multiWordWarningDiv = document.getElementById("multiWordWarning"); // Haal referentie op
-            const noResultsMessage = document.getElementById("noResults"); // Haal referentie op
-
-            // Verberg altijd beide meldingen bij de start van een zoekopdracht
-            multiWordWarningDiv.style.display = 'none';
-            noResultsMessage.style.display = 'none';
-
-            console.log("\n--- Starting Search ---");
-
-            // 1. Check voor lege zoekopdracht (reset)
-            if (searchText === "") {
-                 console.log("Search text is empty, showing all sections (content hidden).");
-                 var allSections = document.querySelectorAll("section");
-                 allSections.forEach(function(sec) {
-                     sec.style.display = "block";
-                     const contentDiv = sec.querySelector('.content');
-                     if (contentDiv) {
-                         contentDiv.style.display = 'none';
-                         removeHighlighting(contentDiv);
-                     }
+                 // Hide all paragraphs first, then show only the matching ones
+                 console.log(`      - Hiding all P's in ${contentDiv.id} initially.`);
+                 contentDiv.querySelectorAll('p').forEach(p => {
+                     p.style.display = 'none';
                  });
-                 // multiWordWarningDiv & noResultsMessage al verborgen
-                 console.log("--- Search Complete (Empty Search) ---");
-                return;
-            }
 
-            // 2. Check op meerdere woorden
-            const searchWords = searchText.toLowerCase().split(' ').filter(word => word.length > 0);
-            console.log("Detected words:", searchWords);
-            if (searchWords.length > 1) {
-                console.log("Multiple words detected. Showing warning and stopping search.");
-                multiWordWarningDiv.style.display = 'block'; // Toon de waarschuwing
-                 // Verberg alle secties voor de zekerheid (optioneel)
-                 var allSections = document.querySelectorAll("section");
-                 allSections.forEach(function(sec) {
-                     sec.style.display = "none";
+                 console.log(`      - Showing ${matchingParagraphs.length} matching P's and highlighting...`);
+                 matchingParagraphs.forEach(p => {
+                     p.style.display = 'block'; // Show the matching paragraph
+                     highlightPhraseInElement(p, searchPhrase); // Highlight within this specific paragraph
                  });
-                console.log("--- Search Stopped (Multi-word Warning) ---");
-                return; // Stop de functie hier!
-            }
 
-            // 3. Ga verder met zoeken naar één woord (of de exacte zin, afhankelijk van de highlight-logica)
-            const searchPhrase = searchText.toLowerCase(); // Nu weten we dat het één woord is (of lege string, maar die is al afgevangen)
-            console.log("Search Phrase/Word:", searchPhrase);
-            var contentDivs = document.querySelectorAll(".content");
-            let found = false;
-
-            // Verberg secties en verwijder highlighting vooraf
-            console.log("Hiding all sections and removing previous highlights...");
-            contentDivs.forEach(function(div) {
-                div.parentNode.style.display = "none";
-                removeHighlighting(div); // Gebruik removeHighlighting om te herstellen naar origineel
-            });
-            console.log("Done hiding/resetting.");
-
-            // Zoek en toon relevante secties
-            contentDivs.forEach(function(div, index) {
-                // Herstel eerst naar origineel VOORDAT we innerText checken
-                 var originalHTML = div.getAttribute('data-original-html');
-                 if (!originalHTML) {
-                     console.warn(`DIV ${index + 1} missing data-original-html. Using current innerHTML.`);
-                     originalHTML = div.innerHTML; // Fallback
-                     div.setAttribute('data-original-html', originalHTML); // Probeer op te slaan
-                 } else {
-                    // Belangrijk: Zorg dat we altijd vanuit schoon origineel werken voor check en highlight
-                    div.innerHTML = originalHTML;
-                 }
-
-                var contentText = div.innerText.toLowerCase(); // Tekst om in te zoeken (na herstel!)
-                let phraseFoundInThisDiv = false;
-
-                console.log(`\n[Checking DIV ${index + 1} for "${searchPhrase}"]`);
-                if (contentText.includes(searchPhrase)) { // Check of het woord/zin erin staat
-                    phraseFoundInThisDiv = true;
-                    found = true; // Zet overall found flag
-                    div.parentNode.style.display = "block"; // Toon parent <section>
-                    div.style.display = "block"; // Toon de .content div
-                    highlightSinglePhrase(div, searchPhrase); // Markeer het woord/zin
-                    console.log(`  -> MATCH FOUND in DIV ${index + 1}.`);
-                } else {
-                    console.log(`  -> NO MATCH in DIV ${index + 1}.`);
-                }
-            });
-
-            // Handel de "Geen resultaten" melding af (alleen als NIET de multi-word warning is getoond)
-            if (!found) { // Alleen tonen als er echt niets gevonden is
-                noResultsMessage.style.display = "block";
-            }
-            console.log("--- Search Complete --- Overall 'found' status:", found);
-        }
-        // --- EINDE performSearch ---
-
-
-        // Functie om zoekterm te markeren (enkele zin/woord)
-        function highlightSinglePhrase(element, searchPhrase) {
-            var originalHTML = element.getAttribute('data-original-html');
-            if (!originalHTML) {
-                 console.warn("Cannot highlight: data-original-html not found for element:", element);
-                 return;
-            }
-
-            try {
-                // Escaped de zoekterm voor speciale regex karakters
-                const escapedSearchPhrase = searchPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-                // Maak de regex GLOBAAL ('g') en case-insensitive ('i')
-                const regex = new RegExp(escapedSearchPhrase, 'gi');
-
-                // Voer de vervanging uit op de *originele* HTML string
-                const newHTML = originalHTML.replace(regex, '<span class="highlight">$&</span>');
-
-                // Update de innerHTML alleen als er daadwerkelijk iets veranderd is
-                if (element.innerHTML !== newHTML) {
-                    element.innerHTML = newHTML;
-                }
-            } catch (e) {
-                 console.error(`Error creating or using RegExp for phrase "${searchPhrase}":`, e);
-                 // Herstel naar origineel bij fout
-                 if (originalHTML) element.innerHTML = originalHTML;
-            }
-        }
-
-        // Functie om markering te verwijderen (herstel originele HTML)
-        function removeHighlighting(element) {
-             var originalHTML = element.getAttribute('data-original-html');
-             // Herstel alleen als de huidige inhoud verschilt van het origineel EN het origineel bestaat
-             if (originalHTML && element.innerHTML !== originalHTML) {
-                 element.innerHTML = originalHTML;
-             } else if (!originalHTML) {
-                  // console.warn("Cannot remove highlights: data-original-html not found for:", element.id);
+             } else {
+                  // console.log(`    - No match in Section ${sec.id}`);
              }
-        }
-    </script>
-	
- </body> <!-- Zorg dat dit BOVEN de bestaande </body> tag komt -->
+        });
 
- <footer style="text-align: center; margin-top: 0px; padding-top: 1px; border-top: 1px solid #eee;">
-    <p style="margin-bottom: 0px;">Auteur: Diabetes Liga Midden-Limburg</p>
+        // THIRD: Show "No Results" if nothing was found overall
+        if (!overallFound) {
+            console.log("  -> No overall matches found. Displaying 'No Results'.");
+            noResultsMessage.style.display = "block";
+        }
+        console.log("--- Q&A Search END ---");
+    }
+
+
+    function highlightPhraseInElement(element, searchPhrase) {
+        // Highlights the phrase within a specific element (e.g., a paragraph)
+        // Uses the stored original HTML for that element if available
+        const originalElementHTML = getOriginalParagraphHTML(element); // Use specific P original if possible
+        if (!originalElementHTML) {
+             console.warn("    - Cannot highlight: original HTML not found for element:", element);
+             return;
+        }
+        // console.log(`      - Highlighting "${searchPhrase}" in element.`); // Debug log
+
+        try {
+            const escapedSearchPhrase = searchPhrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedSearchPhrase, 'gi');
+            const newHTML = originalElementHTML.replace(regex, '<span class="highlight">$&</span>');
+
+            // Only update if changed to avoid unnecessary redraws
+            if (element.innerHTML !== newHTML) {
+                element.innerHTML = newHTML;
+            }
+        } catch (e) {
+             console.error(`    - Error during highlight for "${searchPhrase}" in element:`, e);
+             if (originalElementHTML) element.innerHTML = originalElementHTML; // Restore on error
+        }
+    }
+
+    // removeHighlighting is now effectively done by restoreOriginalParagraphs
+    // We keep a simple version for direct calls if needed, but the main logic uses restore.
+    function removeHighlighting(element) {
+         restoreOriginalParagraphs(element);
+    }
+
+</script>
+
+ <footer style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eee;">
+    <p style="margin-bottom: 5px;">Auteur: Diabetes Liga Midden-Limburg</p>
     <p style="margin-top: 0;">
         <a href="https://www.dlml.be" target="_blank" style="color: #23a9e4; text-decoration: none; font-weight: bold;">
             <span style="color: #23a9e4; margin-right: 4px; vertical-align: middle;">🌐</span> <!-- Emoji wereldbol -->
@@ -657,4 +677,5 @@ h1 {
     </p>
 </footer>
 
+</body>
 </html>

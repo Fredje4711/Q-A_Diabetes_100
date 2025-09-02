@@ -487,6 +487,7 @@ De meest voorkomende vorm is diabetes type 2, goed voor meer dan 90% van de geva
     </section>
 
 <script>
+
 // --- Globale variabele voor originele paragrafen ---
 let originalParagraphStates = new Map();
 
@@ -531,6 +532,18 @@ function toggleSection(contentId) {
     }
 }
 
+// --- NIEUWE FUNCTIE: Controleert of ten minste één woord voorkomt ---
+function checkIfAnyWordExists(wordsArray) {
+    for (const paragraphHTML of originalParagraphStates.values()) {
+        const paragraphText = paragraphHTML.toLowerCase();
+        if (wordsArray.some(word => paragraphText.includes(word))) {
+            return true; // Zodra we een match vinden, stoppen we en geven 'true' terug
+        }
+    }
+    return false; // Geen enkel woord gevonden in alle paragrafen
+}
+
+
 // --- Zoekfunctie met AND + optie OR ---
 function performSearch() {
     const searchText = document.getElementById("search-input").value.trim();
@@ -553,26 +566,35 @@ function performSearch() {
         return;
     }
 
-    const searchWords = searchText.toLowerCase().split(/\s+/).filter(w => w.length > 0).slice(0,2);
+    const searchWords = searchText.toLowerCase().split(/\s+/).filter(w => w.length > 0).slice(0, 2);
 
     // Eerst AND-logica
     let overallFound = searchInSections(searchWords, true);
 
-    if (!overallFound && searchWords.length > 1) {
-        // Toon OR-knop in searchMessage
-        messageDiv.style.display = 'block';
-        messageDiv.innerHTML = `
-            Geen exacte match gevonden.
-            <button id="showOR">Toon resultaten voor beide woorden apart</button>
-        `;
-        document.getElementById("showOR").addEventListener("click", function() {
-            searchInSections(searchWords, false); // OR-logica
-            messageDiv.style.display = 'none';
-        });
-    } else if (!overallFound) {
-        // Eén woord of helemaal geen resultaten
-        messageDiv.style.display = 'block';
-        messageDiv.innerHTML = `Geen resultaten gevonden voor: <b>${searchText}</b>`;
+    if (!overallFound) {
+        if (searchWords.length > 1) {
+            // AANGEPASTE LOGICA: Controleer of een OF-zoekopdracht zinvol is
+            if (checkIfAnyWordExists(searchWords)) {
+                // Minstens één woord bestaat, dus toon de OF-knop
+                messageDiv.style.display = 'block';
+                messageDiv.innerHTML = `
+                    Geen exacte match gevonden.
+                    <button id="showOR" style="padding: 4px 8px; margin-left: 10px;">Toon resultaten voor beide woorden apart</button>
+                `;
+                document.getElementById("showOR").addEventListener("click", function() {
+                    searchInSections(searchWords, false); // OR-logica
+                    messageDiv.style.display = 'none';
+                });
+            } else {
+                // Geen van beide woorden bestaat, toon de nieuwe melding
+                messageDiv.style.display = 'block';
+                messageDiv.innerHTML = `Geen resultaten gevonden voor: <b>${searchWords.join(' en ')}</b>`;
+            }
+        } else {
+            // Eén woord en niet gevonden
+            messageDiv.style.display = 'block';
+            messageDiv.innerHTML = `Geen resultaten gevonden voor: <b>${searchText}</b>`;
+        }
     }
 }
 
@@ -669,6 +691,7 @@ function highlightPhraseInElement(element, wordsArray) {
         element.innerHTML = originalHTML;
     }
 }
+
 </script>
 
  <footer style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eee;">

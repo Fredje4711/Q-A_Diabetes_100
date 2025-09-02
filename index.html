@@ -7,7 +7,7 @@
     <style>
 body {
     font-family: Arial, sans-serif;
-    margin: 0 20px 20px 20px; /* Boven 0, rest 20px */
+    margin: 0 20px 20px 20px;
     line-height: 1.6;
     background-color: #f9f9f9;
     color: #333;
@@ -16,10 +16,9 @@ body {
 h1 {
     color: #23a9e4;
     margin-bottom: -15px;
-    margin-top: 10px; /* Begin hiermee, pas aan naar wens */
+    margin-top: 10px;
 }
 
-/* Stijl voor ALLE h2 (sectie titels), behalve die in #toc */
 section > h2 {
     color: #23a9e4;
     cursor: pointer;
@@ -27,13 +26,13 @@ section > h2 {
     background-color: #e6f7ff;
     border-bottom: 1px solid #23a9e4;
     margin-top: 20px;
-    margin-bottom: 0; /* Verkleint ruimte onder titel */
+    margin-bottom: 0;
 }
 
 .content {
     padding: 10px;
     margin-bottom: 20px;
-    display: none; /* Standaard verborgen */
+    display: none;
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
@@ -43,7 +42,6 @@ section > h2 {
     margin-top: 5px;
 }
 
-/* Zorg ervoor dat paragrafen standaard block zijn */
 .content p {
     display: block;
 }
@@ -85,9 +83,16 @@ section > h2 {
     color: #007bff;
 }
 
+/* Sticky zoekcontainer */
 #search-container {
     margin-bottom: 20px;
     text-align: center;
+    position: sticky;
+    top: 0;
+    background: #fff;
+    padding: 12px;
+    z-index: 1000;
+    border-bottom: 2px solid #23a9e4;
 }
 
 #search-input {
@@ -106,6 +111,10 @@ section > h2 {
     cursor: pointer;
 }
 
+#search-button:hover {
+    background-color: #1b8bc2;
+}
+
 .highlight {
     background-color: #8fd3f1;
     font-weight: bold;
@@ -119,6 +128,30 @@ section > h2 {
     color: red;
 }
 
+.search-help {
+    font-size: 0.85em;
+    color: #555;
+    margin-top: 6px;
+}
+
+/* Terug naar zoekknop */
+#backToSearch {
+    text-align: center;
+    margin: 20px 0;
+    display: none;
+}
+#backToSearch button {
+    background: #0077cc;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+#backToSearch button:hover {
+    background: #005fa3;
+}
+
 section {
     display: block;
 }
@@ -129,22 +162,27 @@ section {
     <h1>100 Diabetes Q&A</h1>
     <p>Uitgebreide vraag en antwoord gids</p>
 
+    <!-- 🔍 Zoekvenster -->
     <div id="search-container">
-    <input type="text" id="search-input" placeholder="Typ 1 woord (breed zoeken) of 2 woorden (beide moeten voorkomen)">
-    <button id="search-button" onclick="performSearch()">Zoeken</button>
+        <input type="text" id="search-input" placeholder="Typ 1 woord (breed zoeken) of 2 woorden (beide moeten voorkomen)">
+        <button id="search-button" onclick="performSearch()">Zoeken</button>
 
-    <!-- Uitleg voor de gebruiker -->
-    <div id="searchHelp" style="font-size: 0.85em; color: #555; margin-top: 6px;">
-        💡 Tip: Gebruik 1 woord om breed te zoeken.<br>
-        Gebruik 2 woorden om enkel resultaten te tonen waar beide woorden samen voorkomen.<br>
-        Als er geen exacte match is, verschijnt een knop om te zoeken op één van de woorden.
+        <!-- ℹ Uitleg voor de gebruiker -->
+        <div id="searchHelp" class="search-help">
+            💡 Tip: 1 woord = breed zoeken. 2 woorden = op beide samen zoeken.<br>
+                    Geen exacte match? Dan verschijnt een knop om op beide woorden apart te zoeken.
+        </div>
+
+        <!-- Meldingen -->
+        <div id="searchMessage"></div>
     </div>
 
-    <!-- Hier komen de dynamische meldingen (geen resultaten, OR-fallback, enz.) -->
-    <div id="searchMessage" style="margin-top:10px; color:#b00;"></div>
-</div>
+    <!-- ⬆ Terugknop -->
+    <div id="backToSearch">
+        <button onclick="scrollToSearch()">⬆ Terug naar zoekvenster</button>
+    </div>
 
-
+    <!-- 📑 Inhoudsopgave -->
     <div id="toc">
         <h2>Inhoudsopgave</h2>
         <ul>
@@ -164,12 +202,9 @@ section {
         </ul>
     </div>
 
-	
-	<div id="searchMessage" style="margin:5px 0; color:#b00;"></div>
-
-	
-	<div id="orFallback" style="display:none; margin:5px 0; color:#b00;"></div>
-
+    <!-- Extra placeholders -->
+    <div id="searchMessage" style="margin:5px 0; color:#b00;"></div>
+    <div id="orFallback" style="display:none; margin:5px 0; color:#b00;"></div>
 
     <!-- Secties (verkorte inhoud voor leesbaarheid) -->
     <section id="algemeen">
@@ -504,6 +539,9 @@ function performSearch() {
     messageDiv.style.display = 'none';
     messageDiv.innerHTML = '';
 
+    // Verwijder alle oude terugknoppen
+    document.querySelectorAll(".back-to-top").forEach(btn => btn.remove());
+
     if (searchText === "") {
         document.querySelectorAll("section").forEach(sec => {
             const contentDiv = sec.querySelector('.content');
@@ -525,7 +563,7 @@ function performSearch() {
         messageDiv.style.display = 'block';
         messageDiv.innerHTML = `
             Geen exacte match gevonden.
-            <button id="showOR">Toon resultaten voor één van de woorden</button>
+            <button id="showOR">Toon resultaten voor beide woorden apart</button>
         `;
         document.getElementById("showOR").addEventListener("click", function() {
             searchInSections(searchWords, false); // OR-logica
@@ -541,6 +579,7 @@ function performSearch() {
 // --- Functie om te zoeken in secties met AND of OR logica ---
 function searchInSections(wordsArray, useAnd) {
     let found = false;
+    let firstMatchElement = null;
 
     document.querySelectorAll("section").forEach(sec => {
         const contentDiv = sec.querySelector('.content');
@@ -573,12 +612,40 @@ function searchInSections(wordsArray, useAnd) {
             matchingParagraphs.forEach(p => {
                 p.style.display = 'block';
                 highlightPhraseInElement(p, wordsArray);
+                if (!firstMatchElement) firstMatchElement = p;
             });
+
+            // Voeg terug-naar-boven knop toe (bovenaan content)
+            if (!contentDiv.querySelector(".back-to-top")) {
+                const backBtn = document.createElement("button");
+                backBtn.textContent = "⬆️ Terug naar boven";
+                backBtn.className = "back-to-top";
+                backBtn.style.display = "block";
+                backBtn.style.margin = "10px 0";
+                backBtn.style.padding = "6px 12px";
+                backBtn.style.backgroundColor = "#23a9e4";
+                backBtn.style.color = "white";
+                backBtn.style.border = "none";
+                backBtn.style.borderRadius = "4px";
+                backBtn.style.cursor = "pointer";
+
+                backBtn.addEventListener("click", () => {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                });
+
+                contentDiv.insertBefore(backBtn, contentDiv.firstChild);
+            }
+
         } else {
-            // Geen match → content-div verbergen, kop blijft zichtbaar
+            // Geen match → content-div verbergen
             contentDiv.style.display = 'none';
         }
     });
+
+    // Scroll naar de eerste match
+    if (firstMatchElement) {
+        firstMatchElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
 
     return found;
 }
@@ -603,7 +670,6 @@ function highlightPhraseInElement(element, wordsArray) {
     }
 }
 </script>
-
 
  <footer style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eee;">
     <p style="margin-bottom: 5px;">Auteur: Diabetes Liga Midden-Limburg</p>

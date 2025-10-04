@@ -218,6 +218,79 @@ section {
 #back-to-top-btn:hover {
     background-color: #1b8bc2;
 }
+
+/* --- Stijlen specifiek voor mobiele weergave --- */
+@media screen and (max-width: 600px) {
+    #search-container {
+        display: flex;
+        flex-wrap: wrap; /* Zorgt dat knoppen naar de volgende regel gaan */
+        justify-content: center; /* Centreert de knoppen */
+    }
+
+    #search-input {
+        width: 100%;
+        margin-bottom: 10px;
+        box-sizing: border-box;
+    }
+    
+    #search-container button {
+        margin: 3px; /* Voegt wat ruimte toe rond elke knop */
+    }
+}
+
+/* --- Stijl voor de nieuwe Uitleg knop --- */
+#help-button {
+    padding: 8px 15px;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#help-button:hover {
+    background-color: #007B9A;
+}
+
+/* --- Stijlen voor de Popup --- */
+.popup {
+    display: none; /* Standaard verborgen */
+    position: fixed; /* Blijft op zijn plek */
+    z-index: 1001; /* Zorgt dat het boven alles staat */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.5); /* Semi-transparante achtergrond */
+}
+
+.popup-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px; /* Max breedte voor desktops */
+    border-radius: 8px;
+    position: relative;
+}
+
+.close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close-btn:hover,
+.close-btn:focus {
+    color: black;
+}
     </style>
 </head>
 <body>
@@ -231,13 +304,9 @@ section {
     <button id="search-button" onclick="performSearch()">Zoeken</button>
     <button id="clear-button" onclick="clearInput()">Wissen</button>
     <button id="overview-button" onclick="resetView()">Overzicht</button>
-
-        <!-- ℹ Uitleg voor de gebruiker -->
-        <div id="searchHelp" class="search-help">
-            💡 Tip: 1 woord = breed zoeken. 2 woorden = op beide samen zoeken.<br>
-                    Geen exacte match? Dan verschijnt een knop om op beide woorden apart te zoeken.
-        </div>
-
+    <button id="help-button" onclick="openHelpPopup()">Uitleg</button> <!-- ✨ NIEUW ✨ -->
+</div>
+        
         <!-- Meldingen -->
         <div id="searchMessage"></div>
     </div>
@@ -626,6 +695,23 @@ function checkIfAnyWordExists(wordsArray) {
     return false;
 }
 
+// --- Functies voor de Uitleg Popup ---
+function openHelpPopup() {
+    document.getElementById('help-popup').style.display = 'block';
+}
+
+function closeHelpPopup() {
+    document.getElementById('help-popup').style.display = 'none';
+}
+
+// Sluit popup als de gebruiker op de achtergrond klikt
+window.onclick = function(event) {
+    const popup = document.getElementById('help-popup');
+    if (event.target == popup) {
+        closeHelpPopup();
+    }
+}
+
 function performSearch() {
     const searchText = document.getElementById("search-input").value.trim();
     const messageDiv = document.getElementById("searchMessage");
@@ -768,6 +854,21 @@ function highlightPhraseInElement(element, wordsArray) {
     }
 }
 </script>
+
+<!-- ✨ HET NIEUWE POPUP VENSTER ✨ -->
+<div id="help-popup" class="popup">
+    <div class="popup-content">
+        <span class="close-btn" onclick="closeHelpPopup()">&times;</span>
+        <h3>Uitleg over de zoekfunctie</h3>
+        <p>De zoekfunctie is ontworpen om u snel te helpen de juiste informatie te vinden. Hier is hoe het werkt:</p>
+        <p><strong>Zoeken met 1 woord:</strong><br>
+        Als u één woord invoert (bijv. "insuline"), zoekt de pagina naar alle vragen en antwoorden waarin dat specifieke woord voorkomt. Dit is ideaal voor een brede zoekopdracht.</p>
+        <p><strong>Zoeken met 2 woorden:</strong><br>
+        Als u twee woorden invoert (bijv. "lage bloedsuiker"), zoekt de pagina naar paragrafen waar <strong>beide</strong> woorden in voorkomen. De woorden hoeven niet direct naast elkaar te staan.</p>
+        <p><strong>Geen exacte match?</strong><br>
+        Als er geen paragrafen worden gevonden die beide woorden bevatten, krijgt u de optie om alsnog te zoeken naar paragrafen die minstens één van de twee woorden bevatten.</p>
+    </div>
+</div>
 
  <footer style="text-align: center; margin-top: 1px; padding-top: 1px; border-top: 1px solid #eee;">
     <p style="margin-bottom: 1px; padding: 0 1px; font-size: 0.8em; color: #666; font-style: italic;">

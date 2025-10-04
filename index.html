@@ -812,10 +812,16 @@ function searchInSections(wordsArray, useAnd) {
                 if (!firstMatchElement) firstMatchElement = p;
             });
             
-            contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
+            // --- ✨ DE DEFINITIEVE FIX MET EEN MINIMALE PAUZE ✨ ---
+            // We geven de browser een fractie van een seconde de tijd om de
+            // layout te herberekenen voordat we de hoogte opvragen.
+            setTimeout(function() {
+                contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
+            }, 1); // 1 milliseconde is al voldoende en is onmerkbaar.
+
             contentDiv.style.paddingTop = '10px';
             contentDiv.style.paddingBottom = '10px';
-            contentDiv.style.marginBottom = '20px'; // Voeg marge toe bij openen
+            contentDiv.style.marginBottom = '20px';
 
             if (!contentDiv.querySelector(".back-to-top")) {
                 const backBtn = document.createElement("button");

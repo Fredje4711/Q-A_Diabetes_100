@@ -25,20 +25,32 @@ h1 {
 section > h2 {
     color: #23a9e4;
     cursor: pointer;
-    padding: 10px;
+    padding: 1px 2px;
+    background-color: #f0f8ff;
+    border: 1px solid #23a9e4;
+    margin: 5px;
+    display: inline-block;
+    border-radius: 5px;
+    font-size: 0.85em;
+}
+
+section > h2:hover {
     background-color: #e6f7ff;
-    border-bottom: 1px solid #23a9e4;
-    margin-top: 20px;
-    margin-bottom: 0;
+}
+section > h2.active {
+    background-color: #23a9e4;
+    color: white;
 }
 
 .content {
-    padding: 10px;
-    margin-bottom: 20px;
-    display: none;
+    padding: 0 10px;
+    margin-bottom: 0; /* Standaard geen marge meer */
     border-left: 1px solid #eee;
     border-right: 1px solid #eee;
     border-bottom: 1px solid #eee;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, padding 0.3s ease-out, margin-bottom 0.3s ease-out; /* Marge toegevoegd aan animatie */
 }
 
 .content p:first-child {
@@ -118,6 +130,34 @@ section > h2 {
     background-color: #1b8bc2;
 }
 
+#clear-button {
+    padding: 8px 15px;
+    background-color: #888;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#overview-button {
+    padding: 8px 15px;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+#overview-button:hover {
+    background-color: #005fa3;
+}
+
+#clear-button:hover {
+    background-color: #666;
+}
+
 .highlight {
     background-color: #8fd3f1;
     font-weight: bold;
@@ -158,17 +198,39 @@ section > h2 {
 section {
     display: block;
 }
+
+#back-to-top-btn {
+    display: none; /* Standaard verborgen */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 99;
+    border: none;
+    outline: none;
+    background-color: #23a9e4;
+    color: white;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 50%;
+    font-size: 18px;
+}
+
+#back-to-top-btn:hover {
+    background-color: #1b8bc2;
+}
     </style>
 </head>
 <body>
 
-    <h1>100 Diabetes Q&A</h1>
-    <p>Uitgebreide vraag en antwoord gids</p>
+    <h1>  100 Diabetes Q&A</h1>
+    <p>      Uitgebreide vraag en antwoord gids</p>
 
-    <!-- 🔍 Zoekvenster -->
-    <div id="search-container">
-        <input type="text" id="search-input" placeholder="Typ 1 woord (breed zoeken) of 2 woorden (beide moeten voorkomen)">
-        <button id="search-button" onclick="performSearch()">Zoeken</button>
+<!-- 🔍 Zoekvenster -->
+<div id="search-container">
+    <input type="text" id="search-input" placeholder="Typ 1 woord (breed zoeken) of 2 woorden (beide moeten voorkomen)">
+    <button id="search-button" onclick="performSearch()">Zoeken</button>
+    <button id="clear-button" onclick="clearInput()">Wissen</button>
+    <button id="overview-button" onclick="resetView()">Overzicht</button>
 
         <!-- ℹ Uitleg voor de gebruiker -->
         <div id="searchHelp" class="search-help">
@@ -185,31 +247,13 @@ section {
         <button onclick="scrollToSearch()">⬆ Terug naar zoekvenster</button>
     </div>
 
-    <!-- 📑 Inhoudsopgave -->
-    <div id="toc">
-        <h2>Inhoudsopgave</h2>
-        <ul>
-            <li><a href="#algemeen" onclick="showSectionAndPreventDefault(event, 'algemeen')">Algemene informatie over diabetes</a></li>
-            <li><a href="#typen" onclick="showSectionAndPreventDefault(event, 'typen')">Typen diabetes</a></li>
-            <li><a href="#oorzaken" onclick="showSectionAndPreventDefault(event, 'oorzaken')">Oorzaken en risicofactoren</a></li>
-            <li><a href="#symptomen" onclick="showSectionAndPreventDefault(event, 'symptomen')">Symptomen en diagnose</a></li>
-            <li><a href="#behandeling" onclick="showSectionAndPreventDefault(event, 'behandeling')">Behandeling en medicatie</a></li>
-            <li><a href="#complicaties" onclick="showSectionAndPreventDefault(event, 'complicaties')">Complicaties</a></li>
-            <li><a href="#leefstijl" onclick="showSectionAndPreventDefault(event, 'leefstijl')">Leefstijl en dieet</a></li>
-            <li><a href="#zelfmanagement" onclick="showSectionAndPreventDefault(event, 'zelfmanagement')">Zelfmanagement en monitoring</a></li>
-            <li><a href="#psychosociaal" onclick="showSectionAndPreventDefault(event, 'psychosociaal')">Psychosociale aspecten</a></li>
-            <li><a href="#speciaal" onclick="showSectionAndPreventDefault(event, 'speciaal')">Speciale populaties</a></li>
-            <li><a href="#preventie" onclick="showSectionAndPreventDefault(event, 'preventie')">Preventie</a></li>
-            <li><a href="#onderzoek" onclick="showSectionAndPreventDefault(event, 'onderzoek')">Onderzoek en innovatie</a></li>
-            <li><a href="#overig" onclick="showSectionAndPreventDefault(event, 'overig')">Overige vragen</a></li>
-        </ul>
-    </div>
 
     <!-- Extra placeholders -->
     <div id="searchMessage" style="margin:5px 0; color:#b00;"></div>
     <div id="orFallback" style="display:none; margin:5px 0; color:#b00;"></div>
 
     <!-- Secties (verkorte inhoud voor leesbaarheid) -->
+	<div id="topics-container">
     <section id="algemeen">
         <h2 onclick="toggleSection('algemeen-content')">Algemene informatie over diabetes</h2>
         <div id="algemeen-content" class="content">
@@ -488,6 +532,7 @@ De meest voorkomende vorm is diabetes type 2, goed voor meer dan 90% van de geva
             Betrouwbare informatie over diabetes is te vinden op de website van de Diabetes Liga (www.diabetes.be) en de lokale afdeling Diabetes Liga Midden-Limburg (www.dlml.be). Daarnaast bieden erkende gezondheidsinstellingen, zoals ziekenhuizen en diabetescentra in België, waardevolle informatie. Ook je eigen diabeteszorgverleners, zoals je huisarts, diabetesverpleegkundige of endocrinoloog, kunnen je voorzien van betrouwbare informatie. Vermijd onbetrouwbare of commerciële websites zonder duidelijke bronvermelding.</p>
         </div>
     </section>
+</div>
 
 <script>
 
@@ -495,20 +540,42 @@ De meest voorkomende vorm is diabetes type 2, goed voor meer dan 90% van de geva
 let originalParagraphStates = new Map();
 
 document.addEventListener("DOMContentLoaded", function() {
+    // --- 'Terug naar boven'-knop logica ---
+    const backToTopBtn = document.getElementById('back-to-top-btn');
+    
+    window.onscroll = function() {
+        if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+            backToTopBtn.style.display = "block";
+        } else {
+            backToTopBtn.style.display = "none";
+        }
+    };
+
+    backToTopBtn.addEventListener('click', function() {
+        window.scrollTo({top: 0, behavior: 'smooth'});
+    });
+    
+    // --- Enter-toets functionaliteit ---
+    document.getElementById('search-input').addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            performSearch();
+        }
+    });
+    
+    // --- Paragrafen opslaan en startweergave instellen ---
     document.querySelectorAll("section").forEach(sec => {
-        sec.style.display = "block"; // Sectiekoppen zichtbaar
+        sec.style.display = "block";
         const contentDiv = sec.querySelector('.content');
         if (contentDiv) {
-            contentDiv.style.display = 'none'; // Inhoud initieel verborgen
             contentDiv.querySelectorAll('p').forEach(p => {
                 originalParagraphStates.set(p, p.innerHTML);
-                p.style.display = '';
             });
         }
     });
+    document.getElementById('topics-container').style.display = 'block';
 });
 
-// --- Functies voor originele tekst en herstel ---
 function getOriginalParagraphHTML(pElement) {
     return originalParagraphStates.get(pElement) || pElement.innerHTML;
 }
@@ -517,108 +584,129 @@ function restoreOriginalParagraphs(contentDiv) {
     if (!contentDiv) return;
     contentDiv.querySelectorAll('p').forEach(p => {
         p.innerHTML = getOriginalParagraphHTML(p);
-        p.style.display = 'block';
     });
 }
 
-// --- Sectie toggle bij klikken op kop ---
 function toggleSection(contentId) {
-    var content = document.getElementById(contentId);
-    if (!content) return;
+    const allContentDivs = document.querySelectorAll('.content');
+    const allHeaders = document.querySelectorAll('section > h2');
+    const targetContent = document.getElementById(contentId);
+    if (!targetContent) return;
 
-    const isHidden = content.style.display === "none" || content.style.display === "";
-    if (isHidden) {
-        restoreOriginalParagraphs(content);
-        content.style.display = 'block';
-    } else {
-        content.style.display = 'none';
+    const targetHeader = targetContent.previousElementSibling;
+    const isCurrentlyShown = targetContent.style.maxHeight && targetContent.style.maxHeight !== '0px';
+
+    // Sluit eerst alles
+    allContentDivs.forEach(div => {
+        div.style.maxHeight = '0px';
+        div.style.paddingTop = '0';
+        div.style.paddingBottom = '0';
+        div.style.marginBottom = '0'; // Zorg dat marge weg is
+    });
+    allHeaders.forEach(header => header.classList.remove('active'));
+
+    // Open de gekozen sectie, als deze verborgen was
+    if (!isCurrentlyShown) {
+        restoreOriginalParagraphs(targetContent);
+        targetContent.style.maxHeight = targetContent.scrollHeight + "px";
+        targetContent.style.paddingTop = '10px';
+        targetContent.style.paddingBottom = '10px';
+        targetContent.style.marginBottom = '20px'; // Voeg marge toe bij openen
+        if (targetHeader) {
+            targetHeader.classList.add('active');
+        }
     }
 }
 
-// --- NIEUWE FUNCTIE: Controleert of ten minste één woord voorkomt ---
 function checkIfAnyWordExists(wordsArray) {
     for (const paragraphHTML of originalParagraphStates.values()) {
         const paragraphText = paragraphHTML.toLowerCase();
-        if (wordsArray.some(word => paragraphText.includes(word))) {
-            return true; // Zodra we een match vinden, stoppen we en geven 'true' terug
-        }
+        if (wordsArray.some(word => paragraphText.includes(word))) return true;
     }
-    return false; // Geen enkel woord gevonden in alle paragrafen
+    return false;
 }
 
-
-// --- Zoekfunctie met AND + optie OR ---
 function performSearch() {
     const searchText = document.getElementById("search-input").value.trim();
     const messageDiv = document.getElementById("searchMessage");
-
     messageDiv.style.display = 'none';
     messageDiv.innerHTML = '';
-
-    // Verwijder alle oude terugknoppen
     document.querySelectorAll(".back-to-top").forEach(btn => btn.remove());
 
-    if (searchText === "") {
-        document.querySelectorAll("section").forEach(sec => {
-            const contentDiv = sec.querySelector('.content');
-            if (contentDiv) {
-                contentDiv.style.display = 'none';
-                restoreOriginalParagraphs(contentDiv);
-            }
-        });
-        return;
-    }
+    if (searchText === "") return;
 
     const searchWords = searchText.toLowerCase().split(/\s+/).filter(w => w.length > 0).slice(0, 2);
-
-    // Eerst AND-logica
     let overallFound = searchInSections(searchWords, true);
 
     if (!overallFound) {
+        resetView(true); // Reset met behoud van zoekterm
         if (searchWords.length > 1) {
-            // AANGEPASTE LOGICA: Controleer of een OF-zoekopdracht zinvol is
             if (checkIfAnyWordExists(searchWords)) {
-                // Minstens één woord bestaat, dus toon de OF-knop
                 messageDiv.style.display = 'block';
-                messageDiv.innerHTML = `
-                    Geen exacte match gevonden.
-                    <button id="showOR" style="padding: 4px 8px; margin-left: 10px;">Toon resultaten voor beide woorden apart</button>
-                `;
+                messageDiv.innerHTML = `Geen exacte match. <button id="showOR" style="padding: 4px 8px; margin-left: 10px;">Toon resultaten apart</button>`;
                 document.getElementById("showOR").addEventListener("click", function() {
-                    searchInSections(searchWords, false); // OR-logica
+                    searchInSections(searchWords, false);
                     messageDiv.style.display = 'none';
                 });
             } else {
-                // Geen van beide woorden bestaat, toon de nieuwe melding
                 messageDiv.style.display = 'block';
                 messageDiv.innerHTML = `Geen resultaten gevonden voor: <b>${searchWords.join(' en ')}</b>`;
             }
         } else {
-            // Eén woord en niet gevonden
             messageDiv.style.display = 'block';
             messageDiv.innerHTML = `Geen resultaten gevonden voor: <b>${searchText}</b>`;
         }
     }
 }
 
-// --- Functie om te zoeken in secties met AND of OR logica ---
+function clearInput() {
+    document.getElementById("search-input").value = "";
+}
+
+function resetView(keepSearchText = false) {
+    if (!keepSearchText) {
+        document.getElementById("search-input").value = "";
+    }
+    document.getElementById('topics-container').style.display = 'block';
+
+    document.querySelectorAll("section").forEach(sec => {
+        sec.style.display = 'block';
+        const header = sec.querySelector('h2');
+        if (header) {
+            header.style.display = 'inline-block';
+            header.classList.remove('active');
+        }
+        const contentDiv = sec.querySelector('.content');
+        if (contentDiv) {
+            contentDiv.style.maxHeight = '0px';
+            contentDiv.style.paddingTop = '0';
+            contentDiv.style.paddingBottom = '0';
+            contentDiv.style.marginBottom = '0'; // Zorg dat marge weg is
+            restoreOriginalParagraphs(contentDiv);
+        }
+    });
+
+    const messageDiv = document.getElementById("searchMessage");
+    messageDiv.style.display = 'none';
+    messageDiv.innerHTML = '';
+    document.querySelectorAll(".back-to-top").forEach(btn => btn.remove());
+}
+
 function searchInSections(wordsArray, useAnd) {
     let found = false;
     let firstMatchElement = null;
 
-    document.querySelectorAll("section").forEach(sec => {
+    document.querySelectorAll("#topics-container > section").forEach(sec => {
+        const header = sec.querySelector('h2');
         const contentDiv = sec.querySelector('.content');
-        if (!contentDiv) return;
+        if (!contentDiv || !header) return;
 
         let sectionHasMatch = false;
         let matchingParagraphs = [];
 
         contentDiv.querySelectorAll('p').forEach(p => {
             const paragraphText = getOriginalParagraphHTML(p).toLowerCase();
-            const matches = useAnd
-                ? wordsArray.every(word => paragraphText.includes(word)) // AND
-                : wordsArray.some(word => paragraphText.includes(word));  // OR
-
+            const matches = useAnd ? wordsArray.every(word => paragraphText.includes(word)) : wordsArray.some(word => paragraphText.includes(word));
             if (matches) {
                 sectionHasMatch = true;
                 matchingParagraphs.push(p);
@@ -627,78 +715,65 @@ function searchInSections(wordsArray, useAnd) {
 
         if (sectionHasMatch) {
             found = true;
-
-            // Sectiekop blijft zichtbaar
             sec.style.display = "block";
-
-            // Alleen content-div tonen met matching paragrafen
-            contentDiv.style.display = "block";
+            header.style.display = 'inline-block';
+            header.classList.add('active');
+            
             contentDiv.querySelectorAll('p').forEach(p => p.style.display = 'none');
             matchingParagraphs.forEach(p => {
                 p.style.display = 'block';
                 highlightPhraseInElement(p, wordsArray);
                 if (!firstMatchElement) firstMatchElement = p;
             });
+            
+            contentDiv.style.maxHeight = contentDiv.scrollHeight + "px";
+            contentDiv.style.paddingTop = '10px';
+            contentDiv.style.paddingBottom = '10px';
+            contentDiv.style.marginBottom = '20px'; // Voeg marge toe bij openen
 
-            // Voeg terug-naar-boven knop toe (bovenaan content)
             if (!contentDiv.querySelector(".back-to-top")) {
                 const backBtn = document.createElement("button");
                 backBtn.textContent = "⬆️ Terug naar boven";
                 backBtn.className = "back-to-top";
-                backBtn.style.display = "block";
-                backBtn.style.margin = "10px 0";
-                backBtn.style.padding = "6px 12px";
-                backBtn.style.backgroundColor = "#23a9e4";
-                backBtn.style.color = "white";
-                backBtn.style.border = "none";
-                backBtn.style.borderRadius = "4px";
-                backBtn.style.cursor = "pointer";
-
-                backBtn.addEventListener("click", () => {
-                    window.scrollTo({ top: 0, behavior: "smooth" });
-                });
-
+                backBtn.style.cssText = "display: block; margin: 10px 0; padding: 6px 12px; background-color: #23a9e4; color: white; border: none; border-radius: 4px; cursor: pointer;";
+                backBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
                 contentDiv.insertBefore(backBtn, contentDiv.firstChild);
             }
-
         } else {
-            // Geen match → content-div verbergen
-            contentDiv.style.display = 'none';
+            sec.style.display = 'none';
         }
     });
 
-    // Scroll naar de eerste match
     if (firstMatchElement) {
         firstMatchElement.scrollIntoView({ behavior: "smooth", block: "center" });
     }
-
     return found;
 }
 
-// --- Highlight elk zoekwoord apart ---
 function highlightPhraseInElement(element, wordsArray) {
     const originalHTML = getOriginalParagraphHTML(element);
     if (!originalHTML) return;
-
     let newHTML = originalHTML;
     try {
         wordsArray.forEach(word => {
             if (!word) return;
             const escapedWord = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             const regex = new RegExp(escapedWord, 'gi');
-            newHTML = newHTML.replace(regex, '<span class="highlight">$&</span>');
+            newHTML = newHTML.replace(regex, `<span class="highlight">$&</span>`);
         });
         element.innerHTML = newHTML;
     } catch (e) {
-        console.error("Highlight error for element:", element, e);
+        console.error("Highlight error:", e);
         element.innerHTML = originalHTML;
     }
 }
-
 </script>
 
- <footer style="text-align: center; margin-top: 20px; padding-top: 10px; border-top: 1px solid #eee;">
-    <p style="margin-bottom: 5px;">Auteur: Diabetes Liga Midden-Limburg</p>
+ <footer style="text-align: center; margin-top: 1px; padding-top: 1px; border-top: 1px solid #eee;">
+    <p style="margin-bottom: 1px; padding: 0 1px; font-size: 0.8em; color: #666; font-style: italic;">
+        <strong>Disclaimer:</strong> De informatie op deze pagina is met zorg samengesteld en dient uitsluitend als algemene bron van informatie. Het is niet bedoeld als vervanging voor een medisch consult of professioneel advies van een arts of andere gekwalificeerde zorgverlener. Hoewel we streven naar nauwkeurigheid, kan medische informatie snel verouderen. Stel een diagnose niet uit en negeer professioneel medisch advies niet op basis van wat u hier heeft gelezen.
+    </p>
+    <p style="margin-bottom: 1px;">Auteur: Diabetes Liga Midden-Limburg</p>
     <p style="margin-top: 0;">
         <a href="https://www.dlml.be" target="_blank" style="color: #23a9e4; text-decoration: none; font-weight: bold;">
             <span style="color: #23a9e4; margin-right: 4px; vertical-align: middle;">🌐</span> <!-- Emoji wereldbol -->
@@ -706,6 +781,8 @@ function highlightPhraseInElement(element, wordsArray) {
         </a>
     </p>
 </footer>
+
+<button id="back-to-top-btn" title="Terug naar boven">⬆️</button>
 
 </body>
 

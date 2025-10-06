@@ -200,21 +200,22 @@ section {
 }
 
 #back-to-top-btn {
-    display: none; /* Standaard verborgen */
+    display: none;
     position: fixed;
-    bottom: 100px; /* <-- HIER IS DE AANPASSING */
+    bottom: 100px;
     right: 20px;
     z-index: 99;
     border: none;
     outline: none;
     background-color: #23a9e4;
-    color: white;
+    color: white; /* De tekst is al helder wit */
     cursor: pointer;
-    padding: 10px 14px;
-    border-radius: 50%;
-    font-size: 18px;
+    /* --- AANPASSINGEN --- */
+    padding: 10px 18px;      /* Iets breder voor de tekst */
+    border-radius: 25px;     /* Maakt er een "pilvorm" van */
+    font-size: 16px;         /* Goede, leesbare lettergrootte */
+    font-weight: bold;       /* Maakt de tekst duidelijker */
 }
-
 #back-to-top-btn:hover {
     background-color: #1b8bc2;
 }
@@ -889,7 +890,7 @@ function highlightPhraseInElement(element, wordsArray) {
     </p>
 </footer>
 
-<button id="back-to-top-btn" title="Terug naar boven">⬆️</button>
+<button id="back-to-top-btn" title="Terug naar boven">Terug</button>
 
 </body>
 

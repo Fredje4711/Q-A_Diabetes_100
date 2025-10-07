@@ -8,12 +8,18 @@
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="manifest" href="site.webmanifest">
     <style>
+
+<style>
 body {
     font-family: Arial, sans-serif;
-    margin: 0; /* ✨ CORRECTIE: Marge standaard op 0 gezet */
+    margin: 0;
     line-height: 1.6;
     background-color: #f9f9f9;
     color: #333;
+}
+
+h1, #container > p { /* ✨ CORRECTIE: Alleen de P direct onder de container wordt gecentreerd */
+    text-align: center;
 }
 
 h1 {
@@ -59,43 +65,7 @@ section > h2.active {
 
 .content p {
     display: block;
-}
-
-#toc {
-    background-color: #f0f8ff;
-    padding: 15px;
-    border: 1px solid #23a9e4;
-    margin-bottom: 20px;
-    margin-top: 10px;
-}
-
-#toc h2 {
-     margin: 0;
-     padding: 0;
-     background-color: transparent;
-     border-bottom: none;
-     cursor: default;
-     margin-bottom: 0.5em;
-     margin-top: 0;
-     color: #333;
-     font-size: 1.2em;
-     font-weight: bold;
-}
-
-#toc ul {
-    list-style-type: none;
-    padding: 0;
-    margin-top: 10px;
-    margin-bottom: 0;
-}
-
-#toc li {
-    margin-bottom: 8px;
-}
-
-#toc a {
-    text-decoration: none;
-    color: #007bff;
+    text-align: left;
 }
 
 #search-container {
@@ -111,9 +81,10 @@ section > h2.active {
 
 #search-input {
     padding: 8px;
-    width: 70%;
+    width: 100%;
     border: 1px solid #23a9e4;
     border-radius: 4px;
+    box-sizing: border-box;
 }
 
 #search-button, #clear-button, #overview-button, #help-button {
@@ -125,12 +96,10 @@ section > h2.active {
 }
 
 #search-button { background-color: #23a9e4; }
-#clear-button { background-color: #888; margin-left: 5px; }
-#overview-button { background-color: #0077cc; margin-left: 5px; }
-#help-button { background-color: #008CBA; margin-left: 8px; }
+#overview-button { background-color: #0077cc; }
+#help-button { background-color: #008CBA; }
 
 #search-button:hover { background-color: #1b8bc2; }
-#clear-button:hover { background-color: #666; }
 #overview-button:hover { background-color: #005fa3; }
 #help-button:hover { background-color: #007B9A; }
 
@@ -147,31 +116,8 @@ section > h2.active {
     color: red;
 }
 
-.search-help {
-    font-size: 0.85em;
-    color: #555;
-    margin-top: 6px;
-}
-
 #backToSearch {
-    text-align: center;
-    margin: 20px 0;
-    display: none;
-}
-#backToSearch button {
-    background: #0077cc;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-}
-#backToSearch button:hover {
-    background: #005fa3;
-}
-
-section {
-    display: block;
+    display: none !important;
 }
 
 #back-to-top-btn {
@@ -224,29 +170,8 @@ section {
     cursor: pointer;
 }
 
-.close-btn:hover,
-.close-btn:focus {
+.close-btn:hover, .close-btn:focus {
     color: black;
-}
-
-/* --- STIJLEN VOOR MOBIEL --- */
-@media screen and (max-width: 767px) {
-    body {
-        margin: 0 20px 20px 20px; /* ✨ CORRECTIE: Herstel de originele marge alleen voor mobiel */
-    }
-    #search-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-    #search-input {
-        width: 100%;
-        margin-bottom: 10px;
-        box-sizing: border-box;
-    }
-    #search-container button {
-        margin: 3px;
-    }
 }
 
 #search-results-container .result-item {
@@ -255,6 +180,7 @@ section {
     padding: 15px;
     margin-bottom: 15px;
     background-color: #fff;
+    text-align: left;
 }
 #search-results-container .result-item h3 {
     margin-top: 0;
@@ -264,17 +190,41 @@ section {
     padding-bottom: 5px;
 }
 
+/* --- STIJLEN VOOR MOBIEL --- */
+@media screen and (max-width: 767px) {
+    #container {
+        padding: 0 15px 20px 15px;
+    }
+    #search-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 5px;
+    }
+    #search-input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    #search-container button {
+        flex-basis: 30%;
+        flex-grow: 1;
+        margin: 0;
+        padding: 8px 5px;
+        font-size: 0.9em;
+    }
+}
+
 /* ============================================= */
 /* ✨ STYLES VOOR DESKTOP WEERGAVE ✨            */
 /* ============================================= */
 #container {
     background-color: #ffffff;
-    padding: 1px 20px 20px 20px;
 }
 @media screen and (min-width: 768px) {
     #container {
         max-width: 1000px;
         margin: 20px auto;
+        padding: 20px 40px;
         border: 1px solid #ddd;
         border-radius: 8px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -289,10 +239,22 @@ section {
     section > h2 {
         font-size: 1em;
     }
-    #search-input {
-        width: 50%;
+    
+    #search-container {
+        display: grid;
+        grid-template-areas:
+            "input input input"
+            "button1 button2 button3";
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
     }
+    #search-input { grid-area: input; width: 100%; }
+    #search-button { grid-area: button1; margin: 0;}
+    #overview-button { grid-area: button2; margin: 0;}
+    #help-button { grid-area: button3; margin: 0;}
 }
+</style>
+
     </style>
 </head>
 <body>
@@ -305,7 +267,6 @@ section {
     <div id="search-container">
         <input type="text" id="search-input" placeholder="Typ één of meerdere zoekwoorden...">
         <button id="search-button" onclick="performSearch()">Zoeken</button>
-        <button id="clear-button" onclick="clearInput()">Wissen</button>
         <button id="overview-button" onclick="resetView()">Overzicht</button>
         <button id="help-button" onclick="openHelpPopup()">Uitleg</button>
     </div>
@@ -758,7 +719,17 @@ function displayRankedResults(rankedMatches, wordsArray) {
         sectionsDone.add(title);
     });
 
-    resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    // ✨ DEZE CODE IS NIEUW EN VERVANGT DE OUDE SCROLL-REGEL ✨
+    const searchContainer = document.getElementById('search-container');
+    const searchContainerHeight = searchContainer.offsetHeight; // Meet de hoogte van de zoekbalk
+    
+    // Bereken de positie waar we naartoe willen scrollen
+    const targetPosition = resultsContainer.offsetTop - searchContainerHeight - 10; // -10 voor extra marge
+
+    window.scrollTo({
+        top: targetPosition,
+        behavior: 'smooth'
+    });
 }
 
 function highlightWordsInElement(element, wordsArray) {

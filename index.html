@@ -69,7 +69,8 @@ section > h2.active {
 }
 
 #search-container {
-    margin-bottom: 20px;
+	margin-top: -15px;
+    margin-bottom: 10px;
     text-align: center;
     position: sticky;
     top: 0;
@@ -584,6 +585,7 @@ section > h2.active {
 let originalParagraphStates = new Map();
 
 document.addEventListener("DOMContentLoaded", function() {
+    // 'Terug naar boven'-knop logica
     const backToTopBtn = document.getElementById('back-to-top-btn');
     window.onscroll = function() {
         if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
@@ -594,6 +596,7 @@ document.addEventListener("DOMContentLoaded", function() {
     };
     backToTopBtn.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
     
+    // Enter-toets functionaliteit
     document.getElementById('search-input').addEventListener('keydown', function(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -601,6 +604,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
+    // Paragrafen opslaan voor later gebruik
     document.querySelectorAll("section .content p").forEach(p => {
         originalParagraphStates.set(p, p.innerHTML);
     });
@@ -621,7 +625,7 @@ function clearInput() {
 }
 
 // ====================================================================
-// === ✨ DEFINITIEVE KERNLOGICA MET CORRECTE SORTERING ✨ ===
+// === ✨ DEFINITIEVE KERNLOGICA MET SLIMMERE WOORDHERKENNING ✨ ===
 // ====================================================================
 
 function performSearch() {
@@ -655,8 +659,22 @@ function searchAndRankParagraphs(wordsArray) {
         const paragraphText = getOriginalParagraphHTML(p).toLowerCase();
         let score = 0;
         const uniqueWords = new Set(wordsArray);
+        
         uniqueWords.forEach(word => {
-            if (paragraphText.includes(word)) {
+            // ✨ DE CORRECTIE ZIT HIER: Slimmere matching ✨
+            let found = paragraphText.includes(word);
+            // Als het woord niet direct gevonden is, probeer een veelvoorkomende variatie
+            if (!found) {
+                if (word.endsWith('e')) {
+                    // Als het zoekwoord eindigt op 'e' (bv. 'lage'), zoek dan ook naar de versie zonder 'e' (bv. 'laag')
+                    found = paragraphText.includes(word.slice(0, -1));
+                } else {
+                    // Als het zoekwoord niet op 'e' eindigt (bv. 'laag'), zoek dan ook naar de versie met een 'e' erachter
+                    found = paragraphText.includes(word + 'e');
+                }
+            }
+
+            if (found) {
                 score++;
             }
         });
@@ -672,7 +690,6 @@ function searchAndRankParagraphs(wordsArray) {
         }
     });
     
-    // Sorteer op score (hoogste eerst)
     return allMatches.sort((a, b) => b.score - a.score);
 }
 
@@ -684,48 +701,29 @@ function displayRankedResults(rankedMatches, wordsArray) {
     topicsContainer.style.display = 'none';
     resultsContainer.style.display = 'block';
 
-    const groupedResults = {};
-    rankedMatches.forEach(match => {
-        if (!groupedResults[match.sectionTitle]) {
-            groupedResults[match.sectionTitle] = [];
-        }
-        groupedResults[match.sectionTitle].push(match);
-    });
+    let lastSectionTitle = "";
+    let currentResultItem = null;
 
-    // ✨ DE CORRECTIE: We itereren nu over de *gesorteerde* lijst en bouwen van daaruit op.
-    const sectionsDone = new Set();
     rankedMatches.forEach(match => {
-        const title = match.sectionTitle;
-        if (sectionsDone.has(title)) {
-            return; // Deze sectie is al volledig toegevoegd.
+        if (match.sectionTitle !== lastSectionTitle) {
+            lastSectionTitle = match.sectionTitle;
+            currentResultItem = document.createElement('div');
+            currentResultItem.className = 'result-item';
+            const titleElement = document.createElement('h3');
+            titleElement.textContent = match.sectionTitle;
+            currentResultItem.appendChild(titleElement);
+            resultsContainer.appendChild(currentResultItem);
         }
 
-        const resultItem = document.createElement('div');
-        resultItem.className = 'result-item';
-
-        const titleElement = document.createElement('h3');
-        titleElement.textContent = title;
-        resultItem.appendChild(titleElement);
-
-        // Voeg alle paragrafen uit deze categorie toe (ze zijn al gesorteerd)
-        groupedResults[title].forEach(innerMatch => {
-            const paragraph = document.createElement('p');
-            paragraph.innerHTML = innerMatch.htmlContent;
-            highlightWordsInElement(paragraph, wordsArray);
-            resultItem.appendChild(paragraph);
-        });
-
-        resultsContainer.appendChild(resultItem);
-        sectionsDone.add(title);
+        const paragraph = document.createElement('p');
+        paragraph.innerHTML = match.htmlContent;
+        highlightWordsInElement(paragraph, wordsArray);
+        currentResultItem.appendChild(paragraph);
     });
 
-    // ✨ DEZE CODE IS NIEUW EN VERVANGT DE OUDE SCROLL-REGEL ✨
     const searchContainer = document.getElementById('search-container');
-    const searchContainerHeight = searchContainer.offsetHeight; // Meet de hoogte van de zoekbalk
-    
-    // Bereken de positie waar we naartoe willen scrollen
-    const targetPosition = resultsContainer.offsetTop - searchContainerHeight - 10; // -10 voor extra marge
-
+    const searchContainerHeight = searchContainer.offsetHeight;
+    const targetPosition = resultsContainer.offsetTop - searchContainerHeight - 10;
     window.scrollTo({
         top: targetPosition,
         behavior: 'smooth'
@@ -747,7 +745,6 @@ function highlightWordsInElement(element, wordsArray) {
 function resetView() {
     document.getElementById("search-input").value = "";
     document.getElementById("searchMessage").style.display = 'none';
-    
     document.getElementById('search-results-container').style.display = 'none';
     document.getElementById('search-results-container').innerHTML = '';
     document.getElementById('topics-container').style.display = 'block';
@@ -765,7 +762,6 @@ function resetView() {
     });
 }
 
-// Originele toggleSection functie voor de standaard weergave
 function toggleSection(contentId) {
     const allContentDivs = document.querySelectorAll('.content');
     const allHeaders = document.querySelectorAll('section > h2');

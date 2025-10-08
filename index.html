@@ -18,14 +18,19 @@ body {
     color: #333;
 }
 
-h1, #container > p { /* ✨ CORRECTIE: Alleen de P direct onder de container wordt gecentreerd */
+/* ✨ CORRECTIE: Slimmere, responsieve lettergroottes ✨ */
+h1 {
     text-align: center;
+    color: #23a9e4;
+    /* Schaal de lettergrootte van 1.8em op mobiel tot 2.5em op desktop */
+    font-size: clamp(1.8em, 8vw, 2.5em);
+    margin: 20px 0 -10px 0;
 }
 
-h1 {
-    color: #23a9e4;
-    margin-bottom: -15px;
-    margin-top: 10px;
+#container > p:first-of-type { /* Alleen de eerste P (de ondertitel) */
+    text-align: center;
+    font-size: clamp(1em, 4vw, 1.2em);
+    margin-bottom: 20px;
 }
 
 section > h2 {
@@ -69,8 +74,8 @@ section > h2.active {
 }
 
 #search-container {
-	margin-top: -15px;
-    margin-bottom: 10px;
+	margin-top: -20px;
+    margin-bottom: 20px;
     text-align: center;
     position: sticky;
     top: 0;
@@ -88,7 +93,7 @@ section > h2.active {
     box-sizing: border-box;
 }
 
-#search-button, #clear-button, #overview-button, #help-button {
+#search-button, #overview-button, #help-button {
     padding: 8px 15px;
     color: white;
     border: none;
@@ -232,13 +237,6 @@ section > h2.active {
     }
     body {
         font-size: 16px;
-    }
-    h1 {
-        font-size: 2.5em;
-        margin-top: 20px;
-    }
-    section > h2 {
-        font-size: 1em;
     }
     
     #search-container {

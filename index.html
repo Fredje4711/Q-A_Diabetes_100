@@ -18,18 +18,19 @@ body {
     color: #333;
 }
 
-/* ✨ CORRECTIE: Slimmere, responsieve lettergroottes ✨ */
+/* ✨ DEFINITIEVE CORRECTIE VOOR SMALLE IFRAMES (v2) ✨ */
 h1 {
     text-align: center;
     color: #23a9e4;
-    /* Schaal de lettergrootte van 1.8em op mobiel tot 2.5em op desktop */
-    font-size: clamp(1.8em, 8vw, 2.5em);
+    /* Minimale grootte verder verlaagd naar 1.5em */
+    font-size: clamp(1.5em, 7.5vw, 2.5em);
     margin: 20px 0 -10px 0;
 }
 
-#container > p:first-of-type { /* Alleen de eerste P (de ondertitel) */
+#container > p:first-of-type {
     text-align: center;
-    font-size: clamp(1em, 4vw, 1.2em);
+    /* Minimale grootte verder verlaagd naar 0.85em */
+    font-size: clamp(0.85em, 4vw, 1.2em);
     margin-bottom: 20px;
 }
 

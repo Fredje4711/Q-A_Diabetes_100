@@ -551,16 +551,27 @@ section > h2.active {
     </div>
 
     <div id="help-popup" class="popup">
-        <div class="popup-content">
-            <span class="close-btn" onclick="closeHelpPopup()">&times;</span>
-            <h3>Uitleg over de zoekfunctie</h3>
-            <p>De zoekfunctie helpt u snel de juiste informatie te vinden. U kunt één of meerdere woorden invoeren.</p>
-            <p><strong>Hoe werkt het?</strong><br>
-            De resultaten worden automatisch gesorteerd op relevantie. Paragrafen die <strong>meer</strong> van uw zoekwoorden bevatten, verschijnen hoger in de lijst.</p>
-            <p><strong>Voorbeeld:</strong><br>
-            Als u zoekt op "<em>lage bloedsuiker sporten</em>", worden resultaten met alle drie de woorden bovenaan getoond, gevolgd door resultaten met twee van de woorden, en tot slot resultaten met slechts één van de woorden.</p>
-        </div>
+    <div class="popup-content">
+        <span class="close-btn" onclick="closeHelpPopup()">&times;</span>
+        <h3>Uitleg over de zoekfunctie</h3>
+        <p>Deze zoekfunctie sorteert resultaten automatisch op relevantie. Antwoorden die <strong>meer</strong> van uw zoekwoorden bevatten, verschijnen <strong>altijd bovenaan</strong>.</p>
+        
+        <p><strong>Voorbeeld met 1 woord:</strong><br>
+        Zoekt u op <em>insuline</em>? U krijgt een overzicht van alle vragen waarin dit woord voorkomt.</p>
+        
+        <p><strong>Voorbeeld met 2 woorden:</strong><br>
+        Zoekt u op <em>genezen diabetes</em>? De resultaten die over <strong>zowel</strong> genezen <strong>als</strong> diabetes gaan, komen als eerste. Daaronder volgen de resultaten die maar één van beide woorden bevatten.</p>
+        
+        <p><strong>Voorbeeld met 3 woorden:</strong><br>
+        Zoekt u op <em>bloedsuiker sporten koolhydraten</em>? De vraag die over het stabiel houden van de **bloedsuiker** tijdens het **sporten** met extra **koolhydraten** gaat, zal bovenaan staan. Daarna volgen resultaten met twee matches (bv. alleen over 'bloedsuiker' en 'sporten'), en tot slot de resultaten met maar één match.</p>
+        
+        <hr class="popup-hr">
+        
+        <h3 class="popup-subheader">Tip voor de beste ervaring (zeker op gsm):</h3>
+        <p>Hoe meer woorden u gebruikt, hoe meer resultaten u krijgt die niet altijd even relevant zijn. Dit zorgt voor onnodig veel tekst en scrolwerk. Vooral op een gsm, waar overzicht belangrijk is.</p>
+        <p>Voor het snelste en beste resultaat, beperk u tot de <strong>2 of 3 belangrijkste kernwoorden</strong>.</p>
     </div>
+</div>
 
      <footer style="text-align: center; margin-top: 1px; padding-top: 1px; border-top: 1px solid #eee;">
         <p style="margin-bottom: 1px; padding: 0 1px; font-size: 0.8em; color: #666; font-style: italic;">
@@ -788,4 +799,5 @@ function toggleSection(contentId) {
 </body>
 
 </html>
+
 
